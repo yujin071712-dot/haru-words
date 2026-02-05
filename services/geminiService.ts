@@ -9,16 +9,17 @@ export async function fetchDailyWords(count: number, levels: JLPTLevel[], dateSt
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Generate exactly ${count} Japanese vocabulary words for levels: ${levelsStr}. 
-      Seed date: ${dateStr}. 
-      Return a JSON array where each object has:
+      contents: `Generate exactly ${count} Japanese vocabulary words for JLPT levels: ${levelsStr}. 
+      Use the seed date ${dateStr} to ensure variety. 
+      Return the data strictly as a JSON array of objects. 
+      Each object must have these exact fields:
       - id: unique string
-      - kanji: string (or empty if none)
-      - hiragana: string (reading)
-      - meaning: string (Korean meaning)
-      - exampleJp: string (Japanese example sentence)
-      - exampleKr: string (Korean translation of example)
-      - level: string (one of ${levelsStr})`,
+      - kanji: string (kanji characters, or empty string if it's only kana)
+      - hiragana: string (reading in hiragana)
+      - meaning: string (Korean translation of the word)
+      - exampleJp: string (A simple natural Japanese example sentence using the word)
+      - exampleKr: string (Korean translation of the example sentence)
+      - level: string (the JLPT level, one of ${levelsStr})`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -40,8 +41,12 @@ export async function fetchDailyWords(count: number, levels: JLPTLevel[], dateSt
       }
     });
 
-    const text = response.text.trim();
-    return JSON.parse(text);
+    const text = response.text;
+    if (!text) throw new Error("Empty response from Gemini");
+    
+    // Sometimes the model might wrap response in code blocks even with responseMimeType
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanedText);
   } catch (e) {
     console.error("Gemini fetch error:", e);
     throw e;
@@ -53,10 +58,10 @@ export async function fetchClosingQuote(): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: "일본어 공부를 마친 학생에게 격려가 되는 짧은 일본어 명언이나 노래 가사, 대화문 하나를 추천해줘. '일본어 원문(한글 발음) - 한국어 뜻' 형식으로 한 문장으로 대답해줘.",
+      contents: "일본어 공부를 마친 사용자에게 전할 따뜻한 격려의 명언, 노래 가사, 혹은 짧은 일본어 대화를 하나 추천해주세요. '일본어 원문 - 한국어 뜻' 형식으로 한 문장으로 답변해 주세요.",
     });
     return response.text.trim();
   } catch (e) {
-    return "継続は力なり (게이조쿠와 치카라나리) - 지속하는 것이 힘이다.";
+    return "継続は力なり (계속은 힘이다) - 지속하는 것이 힘이다.";
   }
 }

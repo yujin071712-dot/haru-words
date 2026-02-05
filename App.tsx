@@ -18,31 +18,31 @@ import { ViewState, JapaneseWord, UserSettings, DailyStudySession, JLPTLevel } f
 import { getKSTDateString, formatDate } from './utils/dateUtils';
 import { fetchDailyWords, fetchClosingQuote } from './services/geminiService';
 
-// --- 데이터 ---
+// --- 데이터: 발음을 영어(Romaji)로 수정 ---
 const HIRAGANA = [
-  ['あ', '아'], ['い', '이'], ['う', '우'], ['え', '에'], ['お', '오'],
-  ['か', '카'], ['き', '키'], ['く', '쿠'], ['け', '케'], ['こ', '코'],
-  ['さ', '사'], ['し', '시'], ['す', '스'], ['せ', '세'], ['そ', '소'],
-  ['た', '타'], ['ち', '치'], ['つ', '츠'], ['て', '테'], ['と', '토'],
-  ['な', '나'], ['に', '니'], ['ぬ', '누'], ['ね', '네'], ['の', '노'],
-  ['は', '하'], ['ひ', '히'], ['ふ', '후'], ['へ', '헤'], ['ほ', '호'],
-  ['ま', '마'], ['미', '미'], ['む', '무'], ['め', '메'], ['も', '모'],
-  ['や', '야'], ['ゆ', '유'], ['よ', '요'],
-  ['ら', '라'], ['리', '리'], ['る', '루'], ['れ', '레'], ['ろ', '로'],
-  ['わ', '와'], ['を', '오'], ['ん', '응']
+  ['あ', 'a'], ['い', 'i'], ['う', 'u'], ['え', 'e'], ['お', 'o'],
+  ['か', 'ka'], ['き', 'ki'], ['く', 'ku'], ['け', 'ke'], ['こ', 'ko'],
+  ['さ', 'sa'], ['し', 'shi'], ['す', 'su'], ['せ', 'se'], ['そ', 'so'],
+  ['た', 'ta'], ['ち', 'chi'], ['つ', 'tsu'], ['て', 'te'], ['と', 'to'],
+  ['な', 'na'], ['に', 'ni'], ['ぬ', 'nu'], ['ね', 'ne'], ['の', 'no'],
+  ['は', 'ha'], ['ひ', 'hi'], ['ふ', 'fu'], ['へ', 'he'], ['ほ', 'ho'],
+  ['ま', 'ma'], ['み', 'mi'], ['む', 'mu'], ['め', 'me'], ['も', 'mo'],
+  ['や', 'ya'], ['ゆ', 'yu'], ['よ', 'yo'],
+  ['ら', 'ra'], ['り', 'ri'], ['る', 'ru'], ['れ', 're'], ['ろ', 'ro'],
+  ['わ', 'wa'], ['を', 'wo'], ['ん', 'n']
 ];
 
 const KATAKANA = [
-  ['ア', '아'], ['イ', '이'], ['ウ', '우'], ['エ', '에'], ['オ', '오'],
-  ['カ', '카'], ['キ', '키'], ['ク', '쿠'], ['ケ', '케'], ['コ', '코'],
-  ['サ', '사'], ['シ', '시'], ['ス', '스'], ['セ', '세'], ['ソ', '소'],
-  ['タ', '타'], ['チ', '치'], ['ツ', '츠'], ['テ', '테'], ['ト', '토'],
-  ['ナ', '나'], ['ニ', '니'], ['ヌ', '누'], ['ネ', '네'], ['ノ', '노'],
-  ['ハ', '하'], ['ヒ', '히'], ['フ', '후'], ['ヘ', '헤'], ['ホ', '호'],
-  ['マ', '마'], ['ミ', '미'], ['ム', '무'], ['メ', '메'], ['モ', '모'],
-  ['ヤ', '야'], ['ユ', '유'], ['ヨ', '요'],
-  ['ラ', '라'], ['リ', '리'], ['ル', '루'], ['レ', '레'], ['ロ', '로'],
-  ['ワ', '와'], ['ヲ', '오'], ['ン', '응']
+  ['ア', 'a'], ['イ', 'i'], ['ウ', 'u'], ['エ', 'e'], ['オ', 'o'],
+  ['カ', 'ka'], ['キ', 'ki'], ['ク', 'ku'], ['ケ', 'ke'], ['コ', 'ko'],
+  ['サ', 'sa'], ['シ', 'shi'], ['스', 'su'], ['セ', 'se'], ['ソ', 'so'],
+  ['タ', 'ta'], ['チ', 'chi'], ['ツ', 'tsu'], ['テ', 'te'], ['ト', 'to'],
+  ['ナ', 'na'], ['ニ', 'ni'], ['ヌ', 'nu'], ['ネ', 'ne'], ['ノ', '노'],
+  ['ハ', 'ha'], ['ヒ', 'hi'], ['フ', 'fu'], ['ヘ', 'he'], ['ホ', 'ho'],
+  ['マ', 'ma'], ['ミ', 'mi'], ['ム', 'mu'], ['メ', 'me'], ['モ', 'mo'],
+  ['ヤ', 'ya'], ['ユ', 'yu'], ['ヨ', 'yo'],
+  ['ラ', 'ra'], ['リ', 'ri'], ['ル', 'ru'], ['レ', 're'], ['ロ', 'ro'],
+  ['ワ', 'wa'], ['ヲ', 'wo'], ['ン', 'n']
 ];
 
 // --- 컴포넌트: 네비바 ---
@@ -80,7 +80,7 @@ const Navbar: React.FC<{ currentView: ViewState; setView: (v: ViewState) => void
   );
 };
 
-// --- 컴포넌트: 가나 테스트 ---
+// --- 컴포넌트: 가나 테스트 (영어 발음 기준) ---
 const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [questions, setQuestions] = useState<string[][]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -101,8 +101,12 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const handleNext = () => {
-    if (userInput.trim() === questions[currentIndex][1]) setScore(s => s + 1);
+    const answer = userInput.trim().toLowerCase();
+    const correct = questions[currentIndex][1].toLowerCase();
+    
+    if (answer === correct) setScore(s => s + 1);
     setShowResult(true);
+    
     setTimeout(() => {
       setShowResult(false);
       setUserInput('');
@@ -116,7 +120,7 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black text-slate-800">가나 테스트</h2>
-          <p className="text-slate-500">기초 문자를 테스트해보세요!</p>
+          <p className="text-slate-500">영어 발음(Romaji)으로 문자를 맞춰보세요!</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button onClick={() => startTest('hiragana')} className="p-8 bg-white border border-slate-100 rounded-3xl shadow-sm hover:border-indigo-500 transition-all flex flex-col items-center group">
@@ -162,12 +166,12 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="space-y-4">
         <input 
           type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} disabled={showResult}
-          placeholder="발음을 한글로 입력" className="w-full px-6 py-5 rounded-2xl border-2 border-slate-100 focus:border-indigo-400 focus:outline-none text-xl text-center"
+          placeholder="Enter Romaji (e.g., a, ka, sa)" className="w-full px-6 py-5 rounded-2xl border-2 border-slate-100 focus:border-indigo-400 focus:outline-none text-xl text-center font-mono"
           onKeyDown={(e) => e.key === 'Enter' && handleNext()} autoFocus
         />
         {showResult && (
-          <div className={`p-4 rounded-xl text-center font-bold ${userInput.trim() === questions[currentIndex][1] ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-            정답: {questions[currentIndex][1]}
+          <div className={`p-4 rounded-xl text-center font-bold ${userInput.trim().toLowerCase() === questions[currentIndex][1].toLowerCase() ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+            Correct: {questions[currentIndex][1]}
           </div>
         )}
       </div>
@@ -370,7 +374,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button onClick={() => setView('kana-test')} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group">
                 <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"><TypeIcon size={32} /></div>
-                <div className="text-left"><h3 className="text-xl font-black text-slate-800">가나 테스트</h3><p className="text-slate-500 text-sm">히라가나/가타카나 연습</p></div>
+                <div className="text-left"><h3 className="text-xl font-black text-slate-800">가나 테스트</h3><p className="text-slate-500 text-sm">영어(Romaji) 발음 연습</p></div>
               </button>
               <button onClick={() => Object.keys(history).length > 0 ? setView('calendar') : alert('학습 기록이 없습니다.')} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group">
                 <div className="w-16 h-16 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div>
@@ -433,7 +437,7 @@ export default function App() {
             <div className="bg-white p-10 rounded-[40px] shadow-xl border border-slate-100 relative overflow-hidden text-center">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-30" />
                <p className="text-slate-400 text-xs font-black uppercase mb-6 tracking-widest">Today's Quote</p>
-               <p className="text-2xl md:text-3xl font-bold text-slate-800 leading-relaxed japanese-text">"{currentSession?.quote || "継続は力なり (계이조쿠와 치카라나리) - 지속하는 것이 힘이다."}"</p>
+               <p className="text-2xl md:text-3xl font-bold text-slate-800 leading-relaxed japanese-text">"{currentSession?.quote || "継続は力なり (계속은 힘이다) - 지속하는 것이 힘이다."}"</p>
             </div>
             <button onClick={() => setView('home')} className="px-12 py-5 bg-indigo-600 text-white rounded-[24px] font-black text-xl hover:bg-indigo-700 shadow-xl transition-all">홈으로 돌아가기</button>
           </div>
