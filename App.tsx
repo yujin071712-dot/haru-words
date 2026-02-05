@@ -12,20 +12,19 @@ import {
   Loader2,
   Eye,
   EyeOff,
-  Type as TypeIcon,
-  RotateCcw
+  Type as TypeIcon
 } from 'lucide-react';
 import { ViewState, JapaneseWord, UserSettings, DailyStudySession, JLPTLevel } from './types';
 import { getKSTDateString, formatDate } from './utils/dateUtils';
 import { fetchDailyWords, fetchClosingQuote } from './services/geminiService';
 
-// --- Data ---
+// --- Data (Corrected) ---
 const HIRAGANA = [
   ['あ', '아'], ['い', '이'], ['う', '우'], ['え', '에'], ['お', '오'],
-  ['か', '카'], ['き', '키'], ['く', '쿠'], ['け', '케'], ['코', '코'],
-  ['さ', '사'], ['시', '시'], ['す', '스'], ['세', '세'], ['そ', '소'],
-  ['타', '타'], ['ち', '치'], ['つ', '츠'], ['て', '테'], ['と', '토'],
-  ['な', '나'], ['에', '니'], ['ぬ', '누'], ['ね', '네'], ['の', '노'],
+  ['か', '카'], ['き', '키'], ['く', '쿠'], ['け', '케'], ['こ', '코'],
+  ['さ', '사'], ['し', '시'], ['す', '스'], ['せ', '세'], ['そ', '소'],
+  ['た', '타'], ['ち', '치'], ['つ', '츠'], ['て', '테'], ['と', '토'],
+  ['な', '나'], ['に', '니'], ['ぬ', '누'], ['ね', '네'], ['の', '노'],
   ['は', '하'], ['ひ', '히'], ['ふ', '후'], ['へ', '헤'], ['ほ', '호'],
   ['ま', '마'], ['み', '미'], ['む', '무'], ['め', '메'], ['も', '모'],
   ['や', '야'], ['ゆ', '유'], ['よ', '요'],
@@ -40,9 +39,9 @@ const KATAKANA = [
   ['タ', '타'], ['チ', '치'], ['ツ', '츠'], ['テ', '테'], ['ト', '토'],
   ['ナ', '나'], ['ニ', '니'], ['ヌ', '누'], ['ネ', '네'], ['ノ', '노'],
   ['ハ', '하'], ['ヒ', '히'], ['フ', '후'], ['ヘ', '헤'], ['ホ', '호'],
-  ['マ', '마'], ['ミ', '미'], ['ム', '무'], ['메', '메'], ['モ', '모'],
+  ['マ', '마'], ['ミ', '미'], ['ム', '무'], ['メ', '메'], ['モ', '모'],
   ['ヤ', '야'], ['ユ', '유'], ['ヨ', '요'],
-  ['ラ', '라'], ['リ', '리'], ['ル', '루'], ['レ', '레'], ['ロ', '로'],
+  ['ラ', '라'], ['리', '리'], ['ル', '루'], ['レ', '레'], ['ロ', '로'],
   ['ワ', '와'], ['ヲ', '오'], ['ン', '응']
 ];
 
@@ -172,7 +171,7 @@ const TestView: React.FC<{
       } else {
         setIsFinished(true);
       }
-    }, 1500);
+    }, 1200);
   };
 
   if (isFinished) {
@@ -242,7 +241,6 @@ const TestView: React.FC<{
 };
 
 const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [mode, setMode] = useState<'hiragana' | 'katakana' | 'both'>('hiragana');
   const [questions, setQuestions] = useState<string[][]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
@@ -251,16 +249,14 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [isFinished, setIsFinished] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
 
-  const startTest = (selectedMode: typeof mode) => {
+  const startTest = (selectedMode: 'hiragana' | 'katakana' | 'both') => {
     let pool = [];
     if (selectedMode === 'hiragana') pool = [...HIRAGANA];
     else if (selectedMode === 'katakana') pool = [...KATAKANA];
     else pool = [...HIRAGANA, ...KATAKANA];
 
-    // Shuffle and pick 15
     const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 15);
     setQuestions(shuffled);
-    setMode(selectedMode);
     setCurrentIndex(0);
     setScore(0);
     setIsFinished(false);
@@ -290,7 +286,7 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black text-slate-800">가나 테스트</h2>
-          <p className="text-slate-500">기초 문자를 얼마나 잘 알고 있나요?</p>
+          <p className="text-slate-500">일본어의 기초를 튼튼하게!</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button onClick={() => startTest('hiragana')} className="p-8 bg-white border border-slate-100 rounded-3xl shadow-sm hover:border-indigo-500 transition-all flex flex-col items-center group">
@@ -317,7 +313,7 @@ const KanaTestView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <h2 className="text-3xl font-bold text-slate-800 tracking-tight">테스트 완료!</h2>
         <p className="text-xl text-slate-600">점수: <span className="text-indigo-600 font-bold">{score}</span> / {questions.length}</p>
         <div className="flex gap-4">
-          <button onClick={() => setIsStarted(false)} className="px-8 py-3 bg-white border border-slate-200 rounded-full font-bold text-slate-600 hover:bg-slate-50">다시 선택</button>
+          <button onClick={() => setIsStarted(false)} className="px-8 py-3 bg-white border border-slate-200 rounded-full font-bold text-slate-600 hover:bg-slate-50">다시 하기</button>
           <button onClick={onBack} className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700">홈으로</button>
         </div>
       </div>
@@ -373,7 +369,6 @@ export default function App() {
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  // Initialize
   useEffect(() => {
     const savedHistory = localStorage.getItem('komorebi_history');
     const savedSettings = localStorage.getItem('komorebi_settings');
@@ -381,7 +376,6 @@ export default function App() {
     if (savedSettings) setSettings(JSON.parse(savedSettings));
   }, []);
 
-  // Persist
   useEffect(() => {
     localStorage.setItem('komorebi_history', JSON.stringify(history));
   }, [history]);
@@ -414,7 +408,7 @@ export default function App() {
         setIsRevealed(false);
         setView('study');
       } catch (err) {
-        alert("단어를 불러오는 중 오류가 발생했습니다.");
+        alert("데이터를 가져오는데 실패했습니다. 인터넷 연결을 확인해주세요.");
       } finally {
         setLoading(false);
       }
@@ -431,16 +425,10 @@ export default function App() {
       setCurrentSession(updatedSession);
       setView('finish');
     } catch (err) {
-      console.error(err);
       setView('finish');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSelectDateForTest = (date: string) => {
-    setTestSession(history[date]);
-    setView('test');
   };
 
   const renderContent = () => {
@@ -448,7 +436,7 @@ export default function App() {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <Loader2 className="animate-spin text-indigo-600 mb-4" size={48} />
-          <p className="text-slate-500 font-medium animate-pulse">데이터를 처리 중입니다...</p>
+          <p className="text-slate-500 font-medium animate-pulse">데이터를 불러오는 중...</p>
         </div>
       );
     }
@@ -463,15 +451,14 @@ export default function App() {
           <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="text-center md:text-left space-y-2">
               <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight">하루 일본어</h1>
-              <p className="text-slate-500 text-lg">기초부터 탄탄하게, 매일 성장하는 즐거움</p>
+              <p className="text-slate-500 text-lg">매일 조금씩, 단단해지는 일본어 실력</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Daily Study Main Card */}
-              <div className="md:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[32px] p-8 text-white shadow-xl shadow-indigo-100 flex flex-col justify-between">
+              <div className="md:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[32px] p-8 text-white shadow-xl flex flex-col justify-between">
                 <div>
                   <h2 className="text-3xl font-black mb-1">{formatDate(today)}</h2>
-                  <p className="opacity-80 font-medium">오늘의 학습 분량: {settings.wordCount}단어</p>
+                  <p className="opacity-80 font-medium">학습 목표: {settings.wordCount}단어</p>
                 </div>
                 <button 
                   onClick={startDailyStudy}
@@ -481,7 +468,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Stats Card */}
               <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
                 <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center">
                   <CalendarIcon size={32} />
@@ -490,35 +476,24 @@ export default function App() {
                   <p className="text-slate-400 text-sm font-black uppercase tracking-widest">누적 학습</p>
                   <p className="text-5xl font-black text-slate-800">{totalStudiedDates}<span className="text-lg ml-1 opacity-40">일</span></p>
                 </div>
-                <button onClick={() => setView('calendar')} className="text-indigo-600 font-bold hover:underline">학습 기록 보기</button>
+                <button onClick={() => setView('calendar')} className="text-indigo-600 font-bold hover:underline">기록 확인하기</button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Test Options */}
-              <button 
-                onClick={() => setView('kana-test')}
-                className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group"
-              >
-                <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <TypeIcon size={32} />
-                </div>
+              <button onClick={() => setView('kana-test')} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group">
+                <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"><TypeIcon size={32} /></div>
                 <div className="text-left">
                   <h3 className="text-xl font-black text-slate-800">히라가나/가타카나</h3>
-                  <p className="text-slate-500 text-sm">기초 문자를 테스트해보세요</p>
+                  <p className="text-slate-500 text-sm">기초 발음을 테스트하세요</p>
                 </div>
               </button>
 
-              <button 
-                onClick={() => totalStudiedDates > 0 ? setView('calendar') : alert('공부한 이력이 없습니다.')}
-                className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group"
-              >
-                <div className="w-16 h-16 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BrainCircuit size={32} />
-                </div>
+              <button onClick={() => totalStudiedDates > 0 ? setView('calendar') : alert('학습 기록이 없습니다.')} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group">
+                <div className="w-16 h-16 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform"><BrainCircuit size={32} /></div>
                 <div className="text-left">
                   <h3 className="text-xl font-black text-slate-800">단어 복습 테스트</h3>
-                  <p className="text-slate-500 text-sm">공부했던 단어를 시험보세요</p>
+                  <p className="text-slate-500 text-sm">공부한 단어를 다시 확인하세요</p>
                 </div>
               </button>
             </div>
@@ -528,80 +503,44 @@ export default function App() {
       case 'study':
         if (!currentSession) return null;
         const currentWord = currentSession.words[currentWordIdx];
-        const isFirst = currentWordIdx === 0;
-        const isLast = currentWordIdx === currentSession.words.length - 1;
-
         return (
           <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center justify-between px-2">
               <button onClick={() => setView('home')} className="text-slate-400 hover:text-slate-600"><ChevronLeft size={24} /></button>
-              <span className="text-sm font-bold text-slate-400">학습 중: {currentWordIdx + 1} / {currentSession.words.length}</span>
-              <div className="flex gap-1 overflow-hidden max-w-[120px]">
+              <span className="text-sm font-bold text-slate-400">{currentWordIdx + 1} / {currentSession.words.length}</span>
+              <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[120px]">
                  {currentSession.words.map((_, i) => (
                    <div key={i} className={`h-1.5 w-2 flex-shrink-0 rounded-full transition-all ${i === currentWordIdx ? 'bg-indigo-600 w-4' : 'bg-slate-200'}`} />
                  ))}
               </div>
             </div>
 
-            <div 
-              onClick={() => setIsRevealed(!isRevealed)}
-              className={`bg-white rounded-[40px] p-8 md:p-12 shadow-2xl transition-all duration-500 cursor-pointer border-2 min-h-[480px] flex flex-col items-center justify-center text-center select-none ${
-                isRevealed ? 'border-indigo-100 shadow-indigo-50 scale-[1.02]' : 'border-transparent shadow-slate-50'
-              }`}
-            >
+            <div onClick={() => setIsRevealed(!isRevealed)} className={`bg-white rounded-[40px] p-8 md:p-12 shadow-2xl transition-all duration-500 cursor-pointer border-2 min-h-[480px] flex flex-col items-center justify-center text-center select-none ${isRevealed ? 'border-indigo-100 scale-[1.01]' : 'border-transparent'}`}>
               <div className="space-y-6 w-full">
                 <div className="space-y-2">
-                   <div className="text-indigo-500 font-bold text-sm tracking-widest uppercase">{currentWord.level}</div>
+                   <div className="text-indigo-500 font-bold text-xs tracking-widest uppercase">{currentWord.level}</div>
                    <h2 className="text-6xl md:text-8xl font-black japanese-text text-slate-800 tracking-tight">{currentWord.kanji || currentWord.hiragana}</h2>
                    <p className="text-2xl text-slate-400 japanese-text">{currentWord.hiragana}</p>
                 </div>
-
                 <div className="h-px bg-slate-100 w-1/2 mx-auto my-8" />
-
-                <div className={`transition-all duration-500 ease-out flex flex-col items-center ${
-                  isRevealed ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4 pointer-events-none h-0 overflow-hidden'
-                }`}>
-                  <div className="space-y-6 w-full">
-                    <p className="text-4xl font-black text-slate-800">{currentWord.meaning}</p>
-                    <div className="bg-slate-50 p-6 rounded-3xl text-left space-y-2 w-full border border-slate-100">
-                      <p className="text-xs text-slate-400 font-black uppercase tracking-widest">Example Sentence</p>
-                      <p className="text-lg text-slate-700 japanese-text leading-relaxed font-medium">{currentWord.exampleJp}</p>
-                      <p className="text-slate-500">{currentWord.exampleKr}</p>
-                    </div>
+                <div className={`transition-all duration-500 ${isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 h-0 overflow-hidden'}`}>
+                  <p className="text-4xl font-black text-slate-800 mb-6">{currentWord.meaning}</p>
+                  <div className="bg-slate-50 p-6 rounded-3xl text-left space-y-2 border border-slate-100">
+                    <p className="text-xs text-slate-400 font-black uppercase tracking-widest">Example</p>
+                    <p className="text-lg text-slate-700 japanese-text leading-relaxed font-medium">{currentWord.exampleJp}</p>
+                    <p className="text-slate-500">{currentWord.exampleKr}</p>
                   </div>
                 </div>
-
-                {!isRevealed && (
-                  <div className="flex flex-col items-center gap-2 text-indigo-400 font-bold animate-bounce mt-4">
-                    <Eye size={24} />
-                    <p className="text-sm">클릭해서 뜻과 예문 확인</p>
-                  </div>
-                )}
+                {!isRevealed && <div className="flex flex-col items-center gap-2 text-indigo-400 font-bold animate-bounce mt-4"><Eye size={24} /><p className="text-sm">클릭해서 정답 보기</p></div>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => { setCurrentWordIdx(prev => Math.max(0, prev - 1)); setIsRevealed(false); }}
-                disabled={isFirst}
-                className="py-5 px-6 rounded-2xl font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                이전 단어
-              </button>
-              {isLast ? (
-                <button 
-                  onClick={completeStudy}
-                  className="py-5 px-6 rounded-2xl font-black bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                >
-                  학습 완료
-                </button>
+              <button onClick={() => { setCurrentWordIdx(prev => Math.max(0, prev - 1)); setIsRevealed(false); }} disabled={currentWordIdx === 0} className="py-5 rounded-2xl font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 transition-all">이전</button>
+              {currentWordIdx === currentSession.words.length - 1 ? (
+                <button onClick={completeStudy} className="py-5 rounded-2xl font-black bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg transition-all">완료하기</button>
               ) : (
-                <button 
-                  onClick={() => { setCurrentWordIdx(prev => prev + 1); setIsRevealed(false); }}
-                  className="py-5 px-6 rounded-2xl font-black bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                >
-                  다음 단어
-                </button>
+                <button onClick={() => { setCurrentWordIdx(prev => prev + 1); setIsRevealed(false); }} className="py-5 rounded-2xl font-black bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg transition-all">다음</button>
               )}
             </div>
           </div>
@@ -611,95 +550,45 @@ export default function App() {
         return (
           <div className="max-w-2xl mx-auto text-center space-y-10 py-10 animate-in zoom-in-95 duration-700">
             <div className="space-y-4">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 text-green-600 rounded-full mb-4">
-                <CheckCircle size={40} />
-              </div>
-              <h2 className="text-4xl font-black text-slate-800 tracking-tight">훌륭합니다!</h2>
-              <p className="text-slate-500 text-lg font-medium">오늘의 학습 목표를 달성했습니다.</p>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 text-green-600 rounded-full mb-4"><CheckCircle size={40} /></div>
+              <h2 className="text-4xl font-black text-slate-800">참 잘했어요!</h2>
+              <p className="text-slate-500 text-lg">내일도 즐거운 마음으로 만나요.</p>
             </div>
-
-            <div className="bg-white p-10 rounded-[40px] shadow-xl border border-slate-100 relative overflow-hidden text-center">
+            <div className="bg-white p-10 rounded-[40px] shadow-xl border border-slate-100 text-center relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-30" />
-               <p className="text-slate-400 text-xs font-black uppercase tracking-widest mb-6">Today's Quote</p>
-               <p className="text-2xl md:text-3xl font-bold text-slate-800 leading-relaxed japanese-text italic">
-                 "{currentSession?.quote || "지속하는 것이 힘이다. (継続は力なり)"}"
-               </p>
+               <p className="text-slate-400 text-xs font-black tracking-widest mb-6">Today's Quote</p>
+               <p className="text-2xl md:text-3xl font-bold text-slate-800 leading-relaxed japanese-text italic">"{currentSession?.quote || "지속하는 것이 힘이다. (継続は力なり)"}"</p>
             </div>
-
-            <button 
-              onClick={() => setView('home')}
-              className="px-12 py-5 bg-indigo-600 text-white rounded-[24px] font-black text-xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 active:scale-95"
-            >
-              홈으로 돌아가기
-            </button>
+            <button onClick={() => setView('home')} className="px-12 py-5 bg-indigo-600 text-white rounded-[24px] font-black text-xl hover:bg-indigo-700 shadow-xl active:scale-95 transition-all">홈으로 가기</button>
           </div>
         );
 
       case 'calendar':
-        return <CalendarView history={history} onSelectDate={handleSelectDateForTest} />;
+        return <CalendarView history={history} onSelectDate={(date) => { setTestSession(history[date]); setView('test'); }} />;
 
       case 'test':
-        if (!testSession) return null;
-        return <TestView session={testSession} onBack={() => setView('calendar')} />;
+        return testSession ? <TestView session={testSession} onBack={() => setView('calendar')} /> : null;
 
       case 'kana-test':
         return <KanaTestView onBack={() => setView('home')} />;
 
       case 'settings':
         return (
-          <div className="max-w-2xl mx-auto bg-white rounded-[32px] p-8 md:p-12 shadow-sm border border-slate-100 space-y-12 animate-in fade-in slide-in-from-bottom-4">
+          <div className="max-w-2xl mx-auto bg-white rounded-[32px] p-8 md:p-12 shadow-sm border border-slate-100 space-y-12">
             <h2 className="text-3xl font-black text-slate-800">학습 설정</h2>
-            
             <div className="space-y-6">
-              <div className="flex justify-between items-end">
-                <label className="text-sm font-black text-slate-500 uppercase tracking-widest">하루 단어 분량</label>
-                <span className="text-3xl font-black text-indigo-600">{settings.wordCount}<span className="text-sm ml-1 opacity-50">개</span></span>
-              </div>
-              <input 
-                type="range" 
-                min="10" 
-                max="100" 
-                step="10"
-                value={settings.wordCount}
-                onChange={(e) => setSettings(prev => ({ ...prev, wordCount: parseInt(e.target.value) }))}
-                className="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-indigo-600"
-              />
-              <div className="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                <span>심플 (10)</span>
-                <span>적당 (50)</span>
-                <span>열정 (100)</span>
-              </div>
+              <div className="flex justify-between items-end"><label className="text-sm font-black text-slate-500 uppercase tracking-widest">하루 학습량</label><span className="text-3xl font-black text-indigo-600">{settings.wordCount}개</span></div>
+              <input type="range" min="10" max="100" step="10" value={settings.wordCount} onChange={(e) => setSettings(prev => ({ ...prev, wordCount: parseInt(e.target.value) }))} className="w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-indigo-600" />
             </div>
-
             <div className="space-y-6">
-              <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">JLPT 목표 난이도</label>
+              <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">JLPT 목표 등급</label>
               <div className="grid grid-cols-3 gap-4">
                 {(['N5', 'N4', 'N3'] as JLPTLevel[]).map(level => (
-                  <button
-                    key={level}
-                    onClick={() => {
-                      setSettings(prev => ({
-                        ...prev,
-                        difficulty: prev.difficulty.includes(level) 
-                          ? (prev.difficulty.length > 1 ? prev.difficulty.filter(l => l !== level) : prev.difficulty)
-                          : [...prev.difficulty, level]
-                      }));
-                    }}
-                    className={`py-5 rounded-2xl font-black text-xl border-2 transition-all ${
-                      settings.difficulty.includes(level) 
-                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md shadow-indigo-50' 
-                      : 'bg-white border-slate-100 text-slate-300 hover:border-slate-200'
-                    }`}
-                  >
-                    {level}
-                  </button>
+                  <button key={level} onClick={() => setSettings(prev => ({ ...prev, difficulty: prev.difficulty.includes(level) ? (prev.difficulty.length > 1 ? prev.difficulty.filter(l => l !== level) : prev.difficulty) : [...prev.difficulty, level] }))} className={`py-5 rounded-2xl font-black text-xl border-2 transition-all ${settings.difficulty.includes(level) ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md' : 'bg-white border-slate-100 text-slate-300'}`}>{level}</button>
                 ))}
               </div>
             </div>
-
-            <div className="pt-8 border-t border-slate-50 text-center">
-               <button onClick={() => setView('home')} className="bg-slate-800 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-900 transition-colors">설정 완료</button>
-            </div>
+            <div className="pt-8 text-center border-t border-slate-50"><button onClick={() => setView('home')} className="bg-slate-800 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-900 transition-colors">저장 후 나가기</button></div>
           </div>
         );
 
@@ -711,9 +600,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#fcfdfe] text-slate-900 pb-24 md:pb-8 md:pl-20">
       <Navbar currentView={view} setView={setView} />
-      <main className="p-4 md:p-10 max-w-7xl mx-auto">
-        {renderContent()}
-      </main>
+      <main className="p-4 md:p-10 max-w-7xl mx-auto">{renderContent()}</main>
     </div>
   );
 }

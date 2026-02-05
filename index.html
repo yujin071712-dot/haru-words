@@ -11,10 +11,14 @@
         body {
             font-family: 'Noto Sans KR', 'Noto Sans JP', sans-serif;
             background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
         }
         .japanese-text {
             font-family: 'Noto Sans JP', sans-serif;
         }
+        /* 스크롤바 숨기기 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 <script type="importmap">
 {
@@ -30,5 +34,6 @@
 </head>
 <body>
     <div id="root"></div>
+    <script src="index.tsx" type="module"></script>
 </body>
 </html>
