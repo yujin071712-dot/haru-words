@@ -9,10 +9,16 @@ export async function fetchDailyWords(count: number, levels: JLPTLevel[], dateSt
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Generate ${count} Japanese vocabulary words for levels: ${levelsStr}. 
-      Today's unique seed date is ${dateStr}. 
-      Each word must have Kanji (if applicable, otherwise empty string), Hiragana reading, Korean meaning, and one Japanese example sentence with its Korean translation.
-      Ensure words are appropriate for JLPT ${levelsStr}.`,
+      contents: `Generate exactly ${count} Japanese vocabulary words for levels: ${levelsStr}. 
+      Seed date: ${dateStr}. 
+      Return a JSON array where each object has:
+      - id: unique string
+      - kanji: string (or empty if none)
+      - hiragana: string (reading)
+      - meaning: string (Korean meaning)
+      - exampleJp: string (Japanese example sentence)
+      - exampleKr: string (Korean translation of example)
+      - level: string (one of ${levelsStr})`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -34,9 +40,10 @@ export async function fetchDailyWords(count: number, levels: JLPTLevel[], dateSt
       }
     });
 
-    return JSON.parse(response.text.trim());
+    const text = response.text.trim();
+    return JSON.parse(text);
   } catch (e) {
-    console.error("Failed to fetch words from Gemini", e);
+    console.error("Gemini fetch error:", e);
     throw e;
   }
 }
@@ -46,11 +53,10 @@ export async function fetchClosingQuote(): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: "오늘의 일본어 공부를 마친 사용자에게 전할 따뜻한 일본어 명언, 노래 가사, 혹은 일상 대화 문장 중 하나를 추천해줘. 일본어 원문(한자+후리가나)과 한국어 뜻을 같이 포함해서 한 문장으로 답변해줘.",
+      contents: "일본어 공부를 마친 학생에게 격려가 되는 짧은 일본어 명언이나 노래 가사, 대화문 하나를 추천해줘. '일본어 원문(한글 발음) - 한국어 뜻' 형식으로 한 문장으로 대답해줘.",
     });
     return response.text.trim();
   } catch (e) {
-    console.error("Failed to fetch quote", e);
-    return "지속하는 것이 힘이다. (継続は力なり)";
+    return "継続は力なり (게이조쿠와 치카라나리) - 지속하는 것이 힘이다.";
   }
 }
