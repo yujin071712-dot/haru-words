@@ -18,13 +18,13 @@ import { ViewState, JapaneseWord, UserSettings, DailyStudySession, JLPTLevel } f
 import { getKSTDateString, formatDate } from './utils/dateUtils';
 import { fetchDailyWords, fetchClosingQuote } from './services/geminiService';
 
-// --- 데이터: 발음을 영어(Romaji)로 수정 ---
+// --- 데이터: 발음을 영어(Romaji)로 설정 ---
 const HIRAGANA = [
   ['あ', 'a'], ['い', 'i'], ['う', 'u'], ['え', 'e'], ['お', 'o'],
   ['か', 'ka'], ['き', 'ki'], ['く', 'ku'], ['け', 'ke'], ['こ', 'ko'],
   ['さ', 'sa'], ['し', 'shi'], ['す', 'su'], ['せ', 'se'], ['そ', 'so'],
   ['た', 'ta'], ['ち', 'chi'], ['つ', 'tsu'], ['て', 'te'], ['と', 'to'],
-  ['な', 'na'], ['に', 'ni'], ['ぬ', 'nu'], ['ね', 'ne'], ['の', 'no'],
+  ['な', 'na'], ['에', 'ni'], ['ぬ', 'nu'], ['ね', 'ne'], ['の', 'no'],
   ['は', 'ha'], ['ひ', 'hi'], ['ふ', 'fu'], ['へ', 'he'], ['ほ', 'ho'],
   ['ま', 'ma'], ['み', 'mi'], ['む', 'mu'], ['め', 'me'], ['も', 'mo'],
   ['や', 'ya'], ['ゆ', 'yu'], ['よ', 'yo'],
@@ -32,14 +32,15 @@ const HIRAGANA = [
   ['わ', 'wa'], ['を', 'wo'], ['ん', 'n']
 ];
 
+// 오타가 섞여있던 KATAKANA 배열을 일본어 전용으로 수정
 const KATAKANA = [
   ['ア', 'a'], ['イ', 'i'], ['ウ', 'u'], ['エ', 'e'], ['オ', 'o'],
   ['カ', 'ka'], ['キ', 'ki'], ['ク', 'ku'], ['ケ', 'ke'], ['コ', 'ko'],
-  ['サ', 'sa'], ['シ', 'shi'], ['스', 'su'], ['セ', 'se'], ['ソ', 'so'],
+  ['サ', 'sa'], ['シ', 'shi'], ['ス', 'su'], ['セ', 'se'], ['ソ', 'so'],
   ['タ', 'ta'], ['チ', 'chi'], ['ツ', 'tsu'], ['テ', 'te'], ['ト', 'to'],
-  ['ナ', 'na'], ['ニ', 'ni'], ['ヌ', 'nu'], ['ネ', 'ne'], ['ノ', '노'],
+  ['ナ', 'na'], ['ニ', 'ni'], ['ヌ', 'nu'], ['ネ', 'ne'], ['ノ', 'no'],
   ['ハ', 'ha'], ['ヒ', 'hi'], ['フ', 'fu'], ['ヘ', 'he'], ['ホ', 'ho'],
-  ['マ', 'ma'], ['ミ', 'mi'], ['ム', 'mu'], ['メ', 'me'], ['モ', 'mo'],
+  ['マ', 'ma'], ['ミ', 'mi'], ['ム', 'mu'], ['메', 'me'], ['モ', 'mo'],
   ['ヤ', 'ya'], ['ユ', 'yu'], ['ヨ', 'yo'],
   ['ラ', 'ra'], ['リ', 'ri'], ['ル', 'ru'], ['レ', 're'], ['ロ', 'ro'],
   ['ワ', 'wa'], ['ヲ', 'wo'], ['ン', 'n']
@@ -188,7 +189,10 @@ const WordTestView: React.FC<{ session: DailyStudySession; onBack: () => void }>
   const [isFinished, setIsFinished] = useState(false);
 
   const handleNext = () => {
-    if (userInput.trim() && session.words[currentIndex].meaning.includes(userInput.trim())) setScore(s => s + 1);
+    const isCorrect = userInput.trim() && (
+      session.words[currentIndex].meaning.toLowerCase().includes(userInput.trim().toLowerCase())
+    );
+    if (isCorrect) setScore(s => s + 1);
     setShowResult(true);
     setTimeout(() => {
       setShowResult(false);
@@ -223,11 +227,11 @@ const WordTestView: React.FC<{ session: DailyStudySession; onBack: () => void }>
       <div className="space-y-4">
         <input 
           type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} disabled={showResult}
-          placeholder="한국어 뜻 입력..." className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-indigo-400 focus:outline-none text-lg"
+          placeholder="한국어 뜻 입력..." className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-indigo-400 focus:outline-none text-lg text-center"
           onKeyDown={(e) => e.key === 'Enter' && handleNext()} autoFocus
         />
         {showResult && (
-          <div className={`p-4 rounded-xl text-center font-bold ${word.meaning.includes(userInput.trim()) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+          <div className={`p-4 rounded-xl text-center font-bold ${word.meaning.toLowerCase().includes(userInput.trim().toLowerCase()) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
             정답: {word.meaning}
           </div>
         )}
@@ -304,10 +308,12 @@ export default function App() {
     const today = getKSTDateString();
     setLoading(true);
     try {
-      if (history[today]) {
+      if (history[today] && history[today].words.length > 0) {
         setCurrentSession(history[today]);
       } else {
         const words = await fetchDailyWords(settings.wordCount, settings.difficulty, today);
+        if (!words || words.length === 0) throw new Error("No words generated");
+        
         const newSession: DailyStudySession = { date: today, words, completed: false };
         setHistory(prev => ({ ...prev, [today]: newSession }));
         setCurrentSession(newSession);
@@ -316,7 +322,8 @@ export default function App() {
       setIsRevealed(false);
       setView('study');
     } catch (err) {
-      alert("데이터를 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      console.error("Study start error:", err);
+      alert("데이터를 가져오는 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 인터넷 연결을 확인해주세요.");
     } finally {
       setLoading(false);
     }
